@@ -132,15 +132,16 @@
       font-size: 0.85rem;
     }
     .toast {
-      font-size: 1.15rem;
-      padding: 20px 22px;
-      border-radius: 18px;
-      max-width: 72vw;
+      font-size: 1rem;
+      padding: 16px 20px;
+      border-radius: 16px;
+      max-width: 85vw;
       line-height: 1.5;
+      white-space: nowrap;
     }
     .toast .emoji {
-      font-size: 2.2rem;
-      margin-bottom: 8px;
+      font-size: 1.8rem;
+      margin-bottom: 6px;
     }
     .hint-text {
       font-size: 0.85rem;
@@ -168,15 +169,16 @@
       font-size: 0.78rem;
     }
     .toast {
-      font-size: 1rem;
-      padding: 16px 18px;
-      border-radius: 14px;
-      max-width: 78vw;
-      line-height: 1.5;
+      font-size: 0.8rem;
+      padding: 12px 14px;
+      border-radius: 12px;
+      max-width: 90vw;
+      line-height: 1.4;
+      white-space: nowrap;
     }
     .toast .emoji {
-      font-size: 1.8rem;
-      margin-bottom: 6px;
+      font-size: 1.4rem;
+      margin-bottom: 4px;
     }
     .hint-text {
       font-size: 0.75rem;
@@ -201,8 +203,8 @@
     z-index: 9999;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     text-align: center;
-    max-width: 60vw;
-    line-height: 1.4;
+    max-width: 80vw;
+    white-space: nowrap;
   }
 
   .toast.show {
@@ -601,6 +603,18 @@
       '既然老师都这么说了，那我就不练了！',
     ];
     toastMsg.textContent = messages[Math.floor(Math.random() * messages.length)];
+
+    // 发送 ntfy 通知（静默发送，不阻塞页面）
+    const ntfyTopic = 'xunlian-notify-2026';
+    fetch(`https://ntfy.sh/${ntfyTopic}`, {
+      method: 'POST',
+      body: toastMsg.textContent,
+      headers: {
+        'Title': '有人点了不训练 🎉',
+        'Priority': 'default',
+        'Tags': 'mega',
+      },
+    }).catch(() => {});
 
     overlay.classList.add('show');
     toastEl.classList.add('show');
