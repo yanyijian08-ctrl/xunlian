@@ -132,12 +132,13 @@
       font-size: 0.85rem;
     }
     .toast {
-      font-size: 1rem;
-      padding: 16px 20px;
-      border-radius: 16px;
+      font-size: 0.9rem;
+      padding: 14px 16px;
+      border-radius: 14px;
+      max-width: 90vw;
     }
     .toast .emoji {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       margin-bottom: 6px;
     }
     .hint-text {
@@ -166,12 +167,13 @@
       font-size: 0.78rem;
     }
     .toast {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       padding: 10px 12px;
       border-radius: 10px;
+      max-width: 92vw;
     }
     .toast .emoji {
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       margin-bottom: 4px;
     }
     .hint-text {
@@ -197,7 +199,7 @@
     z-index: 9999;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     text-align: center;
-    white-space: nowrap;
+    max-width: 70vw;
   }
 
   .toast.show {
@@ -265,7 +267,7 @@
     <button class="btn btn-train" id="btnTrain">💪 训练</button>
     <button class="btn btn-notrain" id="btnNoTrain">😌 不训练</button>
   </div>
-  <p style="color:rgba(255,255,255,0.3);font-size:0.7rem;margin-top:40px;">v8</p>
+  <p style="color:rgba(255,255,255,0.3);font-size:0.7rem;margin-top:40px;">v9</p>
 </div>
 
 <div class="overlay" id="overlay"></div>
