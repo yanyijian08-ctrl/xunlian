@@ -113,6 +113,67 @@
   .swing-anim { animation-name: swing; }
   .drift-anim { animation-name: drift; }
 
+  /* === 移动端适配 === */
+  @media (max-width: 768px) {
+    .question {
+      font-size: 1.6rem;
+      margin-bottom: 36px;
+      padding: 0 16px;
+    }
+    .btn {
+      padding: 14px 34px;
+      font-size: 1.15rem;
+    }
+    .extra-notrain {
+      padding: 8px 18px;
+      font-size: 0.85rem;
+    }
+    .toast {
+      font-size: 2rem;
+      padding: 30px 36px;
+      border-radius: 24px;
+    }
+    .toast .emoji {
+      font-size: 3.5rem;
+      margin-bottom: 12px;
+    }
+    .hint-text {
+      font-size: 0.85rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .question {
+      font-size: 1.25rem;
+      margin-bottom: 28px;
+      padding: 0 12px;
+    }
+    .btn {
+      padding: 12px 24px;
+      font-size: 1rem;
+      border-radius: 40px;
+    }
+    .extra-notrain {
+      padding: 6px 14px;
+      font-size: 0.75rem;
+    }
+    .toast {
+      font-size: 1.5rem;
+      padding: 24px 28px;
+      border-radius: 20px;
+    }
+    .toast .emoji {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    .hint-text {
+      font-size: 0.75rem;
+    }
+  }
+
+  /* 修复移动端 100vh 问题 */
+  body { min-height: 100dvh; }
+
   .toast {
     position: fixed;
     top: 50%;
@@ -231,6 +292,11 @@
   let gameEnded = false;
   let canDodge = true;
 
+  // 根据屏幕宽度缩放参数，手机端调小间距和距离
+  function screenScale() {
+    return Math.min(1, window.innerWidth / 768);
+  }
+
   // === "不训练" - 正常结束 ===
   btnNoTrain.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -287,7 +353,7 @@
       const dx = btnCX - e.clientX;
       const dy = btnCY - e.clientY;
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      const escapeDist = 150 + dodgeCount * 15;
+      const escapeDist = (150 + dodgeCount * 15) * screenScale();
 
       // 基础逃跑方向 + 30度随机偏移，避免总是逃向同一个角落
       const baseAngle = Math.atan2(dy, dx);
@@ -301,7 +367,7 @@
 
       // 如果被卡在边界动弹不得，跳到远离鼠标的随机位置
       const movedDist = Math.hypot(newX - rect.left, newY - rect.top);
-      if (movedDist < 60) {
+      if (movedDist < 50 * screenScale()) {
         newX = margin + Math.random() * (vw - btnW - margin * 2);
         newY = margin + Math.random() * (vh - btnH - margin * 2);
       }
@@ -324,6 +390,14 @@
   }
 
   function resizeButtons() {
+    const s = screenScale();
+    const trainPad = ORIG_TRAIN_PAD * s;
+    const trainPadX = ORIG_TRAIN_PAD_X * s;
+    const trainFS = ORIG_TRAIN_FS * s;
+    const noTrainPad = ORIG_NOTRAIN_PAD * s;
+    const noTrainPadX = ORIG_NOTRAIN_PAD_X * s;
+    const noTrainFS = ORIG_NOTRAIN_FS * s;
+
     if (dodgeCount <= 4) {
       const t = dodgeCount / 4;
       const trainScale = 1 - t * 0.35;
@@ -332,10 +406,10 @@
       btnTrain.style.transform = `scale(${trainScale})`;
       btnNoTrain.style.transform = `scale(${noTrainScale})`;
 
-      btnTrain.style.padding = `${ORIG_TRAIN_PAD * trainScale}px ${ORIG_TRAIN_PAD_X * trainScale}px`;
-      btnNoTrain.style.padding = `${ORIG_NOTRAIN_PAD * noTrainScale}px ${ORIG_NOTRAIN_PAD_X * noTrainScale}px`;
-      btnTrain.style.fontSize = `${ORIG_TRAIN_FS * trainScale}rem`;
-      btnNoTrain.style.fontSize = `${ORIG_NOTRAIN_FS * noTrainScale}rem`;
+      btnTrain.style.padding = `${trainPad * trainScale}px ${trainPadX * trainScale}px`;
+      btnNoTrain.style.padding = `${noTrainPad * noTrainScale}px ${noTrainPadX * noTrainScale}px`;
+      btnTrain.style.fontSize = `${trainFS * trainScale}rem`;
+      btnNoTrain.style.fontSize = `${noTrainFS * noTrainScale}rem`;
     } else if (dodgeCount === 5) {
       // 弹回原始大小
       const spring = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
@@ -343,10 +417,10 @@
       btnNoTrain.style.transition = spring;
       btnTrain.style.transform = 'scale(1)';
       btnNoTrain.style.transform = 'scale(1)';
-      btnTrain.style.padding = `${ORIG_TRAIN_PAD}px ${ORIG_TRAIN_PAD_X}px`;
-      btnNoTrain.style.padding = `${ORIG_NOTRAIN_PAD}px ${ORIG_NOTRAIN_PAD_X}px`;
-      btnTrain.style.fontSize = `${ORIG_TRAIN_FS}rem`;
-      btnNoTrain.style.fontSize = `${ORIG_NOTRAIN_FS}rem`;
+      btnTrain.style.padding = `${trainPad}px ${trainPadX}px`;
+      btnNoTrain.style.padding = `${noTrainPad}px ${noTrainPadX}px`;
+      btnTrain.style.fontSize = `${trainFS}rem`;
+      btnNoTrain.style.fontSize = `${noTrainFS}rem`;
     }
   }
 
@@ -396,12 +470,14 @@
     let posX, posY;
 
     if (dodgeCount < 21) {
-      // 安全排列：黄金角度 + 足够半径
+      // 安全排列：黄金角度 + 足够半径（适配屏幕大小）
       const GOLDEN = 137.508 * Math.PI / 180;
-      const layer = Math.floor(idx / 8);
-      const idxInLayer = idx % 8;
+      const perLayer = window.innerWidth < 480 ? 5 : 8;
+      const layer = Math.floor(idx / perLayer);
+      const idxInLayer = idx % perLayer;
       const angle = idxInLayer * GOLDEN + layer * 0.35;
-      const radius = 170 + layer * 45 + idx * 6;
+      const s = screenScale();
+      const radius = (170 + layer * 45 + idx * 6) * s;
 
       posX = trainCX + Math.cos(angle) * radius;
       posY = trainCY + Math.sin(angle) * radius;
