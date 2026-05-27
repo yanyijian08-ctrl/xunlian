@@ -132,14 +132,14 @@
       font-size: 0.85rem;
     }
     .toast {
-      font-size: 0.9rem;
-      padding: 14px 16px;
-      border-radius: 14px;
+      font-size: 0.7rem;
+      padding: 10px 14px;
+      border-radius: 12px;
       max-width: 90vw;
     }
     .toast .emoji {
-      font-size: 1.6rem;
-      margin-bottom: 6px;
+      font-size: 1.2rem;
+      margin-bottom: 4px;
     }
     .hint-text {
       font-size: 0.85rem;
@@ -167,14 +167,14 @@
       font-size: 0.78rem;
     }
     .toast {
-      font-size: 0.7rem;
-      padding: 10px 12px;
-      border-radius: 10px;
+      font-size: 0.5rem;
+      padding: 8px 10px;
+      border-radius: 8px;
       max-width: 92vw;
     }
     .toast .emoji {
-      font-size: 1.2rem;
-      margin-bottom: 4px;
+      font-size: 1rem;
+      margin-bottom: 3px;
     }
     .hint-text {
       font-size: 0.75rem;
@@ -267,7 +267,7 @@
     <button class="btn btn-train" id="btnTrain">💪 训练</button>
     <button class="btn btn-notrain" id="btnNoTrain">😌 不训练</button>
   </div>
-  <p style="color:rgba(255,255,255,0.3);font-size:0.7rem;margin-top:40px;">v10</p>
+  <p style="color:rgba(255,255,255,0.3);font-size:0.7rem;margin-top:40px;">v11</p>
 </div>
 
 <div class="overlay" id="overlay"></div>
@@ -600,11 +600,6 @@
     ];
     toastMsg.textContent = messages[Math.floor(Math.random() * messages.length)];
 
-    // 根据文字长度动态设置弹窗最小宽度，保证不会两个字就换行
-    const charCount = toastMsg.textContent.length;
-    toastEl.style.minWidth = Math.max(charCount, 6) * 1.1 + 'em';
-    toastEl.style.whiteSpace = 'nowrap';
-
     // 发送 ntfy 通知（静默发送，不阻塞页面）
     const ntfyTopic = 'xunlian-notify-2026';
     fetch(`https://ntfy.sh/${ntfyTopic}`, {
@@ -650,8 +645,6 @@
     btnNoTrain.style.padding = '';
     btnNoTrain.style.fontSize = '';
     btnNoTrain.style.transition = '';
-    toastEl.style.minWidth = '';
-    toastEl.style.whiteSpace = '';
 
     overlay.onclick = () => {
       overlay.classList.remove('show');
