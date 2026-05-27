@@ -292,6 +292,14 @@
       newY = btnCY + (dy / dist) * escapeDist - btnH / 2;
       newX = Math.max(margin, Math.min(vw - btnW - margin, newX));
       newY = Math.max(margin, Math.min(vh - btnH - margin, newY));
+
+      // 如果被卡在边界动弹不得，跳到远离鼠标的随机位置
+      const movedX = Math.abs(newX - rect.left);
+      const movedY = Math.abs(newY - rect.top);
+      if (movedX < 30 && movedY < 30) {
+        newX = margin + Math.random() * (vw - btnW - margin * 2);
+        newY = margin + Math.random() * (vh - btnH - margin * 2);
+      }
     }
 
     if (btnTrain.style.position !== 'fixed') {
