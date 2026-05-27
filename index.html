@@ -272,7 +272,7 @@
 <div class="overlay" id="overlay"></div>
 <div class="toast" id="toast">
   <span class="emoji">🎉</span>
-  谢谢老师！
+  <span id="toastMsg">谢谢老师！</span>
 </div>
 
 <script>
@@ -281,6 +281,7 @@
   const btnNoTrain = document.getElementById('btnNoTrain');
   const overlay = document.getElementById('overlay');
   const toastEl = document.getElementById('toast');
+  const toastMsg = document.getElementById('toastMsg');
 
   const ORIG_TRAIN_PAD = 16;
   const ORIG_TRAIN_PAD_X = 48;
@@ -588,6 +589,15 @@
   function endGame() {
     extraButtons.forEach(b => b.remove());
     extraButtons = [];
+
+    // 随机选一条结束语
+    const messages = [
+      '谢谢老师！',
+      '那我今天就休息啦～',
+      '好吧，原本我还打算加练的～',
+      '既然老师都这么说了，那我就不练了！',
+    ];
+    toastMsg.textContent = messages[Math.floor(Math.random() * messages.length)];
 
     overlay.classList.add('show');
     toastEl.classList.add('show');
