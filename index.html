@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>老师，我今天需要训练吗？</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .container {
+    text-align: center;
+    z-index: 10;
+  }
+
+  .question {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    margin-bottom: 60px;
+    animation: fadeInUp 0.6s ease;
+  }
+
+  .btn {
+    padding: 16px 48px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    position: relative;
+    outline: none;
+    letter-spacing: 2px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn:active {
+    transform: scale(0.95);
+  }
+
+  .btn-train {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: #fff;
+    z-index: 20;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-train:hover {
+    box-shadow: 0 12px 40px rgba(238, 90, 36, 0.5);
+  }
+
+  .btn-notrain {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: #fff;
+    z-index: 30;
+  }
+
+  .btn-notrain:hover {
+    box-shadow: 0 12px 40px rgba(39, 174, 96, 0.5);
+    transform: scale(1.05);
+  }
+
+  .extra-notrain {
+    position: fixed;
+    padding: 10px 28px;
+    font-size: 1rem;
+    border-radius: 50px;
+    pointer-events: auto;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  @keyframes wobble { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 30% { transform: translateY(-15px); } 50% { transform: translateY(0); } 70% { transform: translateY(-8px); } }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+  @keyframes swing { 0% { transform: rotate(0deg); } 25% { transform: rotate(8deg); } 75% { transform: rotate(-8deg); } 100% { transform: rotate(0deg); } }
+  @keyframes drift { 0% { transform: translate(0,0); } 25% { transform: translate(15px,-8px); } 50% { transform: translate(-8px,12px); } 75% { transform: translate(-12px,-4px); } 100% { transform: translate(0,0); } }
+
+  .float-anim { animation-name: float; }
+  .rotate-anim { animation-name: rotate; }
+  .pulse-anim { animation-name: pulse; }
+  .wobble-anim { animation-name: wobble; }
+  .bounce-anim { animation-name: bounce; }
+  .shake-anim { animation-name: shake; }
+  .swing-anim { animation-name: swing; }
+  .drift-anim { animation-name: drift; }
+
+  .toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: #fff;
+    color: #27ae60;
+    font-size: 3rem;
+    font-weight: 900;
+    padding: 40px 60px;
+    border-radius: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    z-index: 9999;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+  }
+
+  .toast.show {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .toast .emoji {
+    font-size: 5rem;
+    display: block;
+    margin-bottom: 20px;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    z-index: 9999;
+    pointer-events: none;
+    animation: confettiFall var(--fall-duration, 2s) linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  .hint-text {
+    position: fixed;
+    color: rgba(255,255,255,0.75);
+    font-size: 1rem;
+    font-weight: 600;
+    z-index: 5;
+    pointer-events: none;
+    animation: hintLife 2.2s ease forwards;
+  }
+
+  @keyframes hintLife {
+    0% { opacity: 0; transform: translateY(10px); }
+    15% { opacity: 1; transform: translateY(0); }
+    75% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="container">
+  <h1 class="question">老师，我今天需要训练吗？🏋️</h1>
+  <div style="display:flex;gap:30px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn btn-train" id="btnTrain">💪 训练</button>
+    <button class="btn btn-notrain" id="btnNoTrain">😌 不训练</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="toast" id="toast">
+  <span class="emoji">🎉</span>
+  谢谢老师！
+</div>
+
+<script>
+(function() {
+  const btnTrain = document.getElementById('btnTrain');
+  const btnNoTrain = document.getElementById('btnNoTrain');
+  const overlay = document.getElementById('overlay');
+  const toastEl = document.getElementById('toast');
+
+  const ORIG_TRAIN_PAD = 16;
+  const ORIG_TRAIN_PAD_X = 48;
+  const ORIG_TRAIN_FS = 1.4;
+  const ORIG_NOTRAIN_PAD = 16;
+  const ORIG_NOTRAIN_PAD_X = 48;
+  const ORIG_NOTRAIN_FS = 1.4;
+
+  const COLOR_PALETTE = [
+    ['#2ecc71','#27ae60'],
+    ['#1abc9c','#16a085'],
+    ['#3cb371','#2e8b57'],
+    ['#20bf6b','#1a9c54'],
+    ['#26de81','#20bf6b'],
+    ['#2ecc71','#1abc9c'],
+  ];
+
+  let dodgeCount = 0;
+  let extraButtons = [];
+  let gameEnded = false;
+  let canDodge = true;
+
+  // === "不训练" - 正常结束 ===
+  btnNoTrain.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (gameEnded) return;
+    gameEnded = true;
+    endGame();
+  });
+
+  // === "训练" - 躲避逻辑 ===
+  btnTrain.addEventListener('mouseenter', (e) => {
+    if (gameEnded || !canDodge) return;
+    triggerDodge(e);
+  });
+
+  btnTrain.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  btnTrain.addEventListener('touchstart', (e) => {
+    if (gameEnded || !canDodge) return;
+    e.preventDefault();
+    triggerDodge(e.touches[0]);
+  }, { passive: false });
+
+  function triggerDodge(e) {
+    canDodge = false;
+    dodgeCount++;
+
+    moveAwayFromCursor(e);
+    resizeButtons();
+    spawnController();
+
+    setTimeout(() => { canDodge = true; }, 300);
+    showRandomHint();
+  }
+
+  function moveAwayFromCursor(e) {
+    const btnW = btnTrain.offsetWidth;
+    const btnH = btnTrain.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const rect = btnTrain.getBoundingClientRect();
+    const margin = 20;
+
+    let newX, newY;
+
+    if (dodgeCount <= 4) {
+      newX = margin + Math.random() * (vw - btnW - margin * 2);
+      newY = margin + Math.random() * (vh - btnH - margin * 2);
+    } else {
+      const btnCX = rect.left + btnW / 2;
+      const btnCY = rect.top + btnH / 2;
+      const dx = btnCX - e.clientX;
+      const dy = btnCY - e.clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const escapeDist = 150 + dodgeCount * 15;
+      newX = btnCX + (dx / dist) * escapeDist - btnW / 2;
+      newY = btnCY + (dy / dist) * escapeDist - btnH / 2;
+      newX = Math.max(margin, Math.min(vw - btnW - margin, newX));
+      newY = Math.max(margin, Math.min(vh - btnH - margin, newY));
+    }
+
+    if (btnTrain.style.position !== 'fixed') {
+      btnTrain.style.position = 'fixed';
+      btnTrain.style.left = rect.left + 'px';
+      btnTrain.style.top = rect.top + 'px';
+      btnTrain.style.transition = 'none';
+      requestAnimationFrame(() => {
+        btnTrain.style.transition = 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
+        btnTrain.style.left = newX + 'px';
+        btnTrain.style.top = newY + 'px';
+      });
+    } else {
+      btnTrain.style.left = newX + 'px';
+      btnTrain.style.top = newY + 'px';
+    }
+  }
+
+  function resizeButtons() {
+    if (dodgeCount <= 4) {
+      const t = dodgeCount / 4;
+      const trainScale = 1 - t * 0.35;
+      const noTrainScale = 1 + t * 0.5;
+
+      btnTrain.style.transform = `scale(${trainScale})`;
+      btnNoTrain.style.transform = `scale(${noTrainScale})`;
+
+      btnTrain.style.padding = `${ORIG_TRAIN_PAD * trainScale}px ${ORIG_TRAIN_PAD_X * trainScale}px`;
+      btnNoTrain.style.padding = `${ORIG_NOTRAIN_PAD * noTrainScale}px ${ORIG_NOTRAIN_PAD_X * noTrainScale}px`;
+      btnTrain.style.fontSize = `${ORIG_TRAIN_FS * trainScale}rem`;
+      btnNoTrain.style.fontSize = `${ORIG_NOTRAIN_FS * noTrainScale}rem`;
+    } else if (dodgeCount === 5) {
+      // 弹回原始大小
+      const spring = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      btnTrain.style.transition = spring;
+      btnNoTrain.style.transition = spring;
+      btnTrain.style.transform = 'scale(1)';
+      btnNoTrain.style.transform = 'scale(1)';
+      btnTrain.style.padding = `${ORIG_TRAIN_PAD}px ${ORIG_TRAIN_PAD_X}px`;
+      btnNoTrain.style.padding = `${ORIG_NOTRAIN_PAD}px ${ORIG_NOTRAIN_PAD_X}px`;
+      btnTrain.style.fontSize = `${ORIG_TRAIN_FS}rem`;
+      btnNoTrain.style.fontSize = `${ORIG_NOTRAIN_FS}rem`;
+    }
+  }
+
+  function spawnController() {
+    if (dodgeCount < 5) return;
+
+    let count;
+    if (dodgeCount <= 10) count = 1;
+    else if (dodgeCount <= 15) count = 2;
+    else if (dodgeCount <= 20) count = 3;
+    else count = 3;
+
+    for (let i = 0; i < count; i++) {
+      spawnExtraNoTrainButton();
+    }
+
+    if (dodgeCount >= 21) {
+      unleashChaos();
+    }
+  }
+
+  function spawnExtraNoTrainButton() {
+    const extra = document.createElement('button');
+    extra.className = 'btn btn-notrain extra-notrain';
+    extra.textContent = '😌 不训练';
+    extra.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (gameEnded) return;
+      gameEnded = true;
+      endGame();
+    });
+
+    const trainRect = btnTrain.getBoundingClientRect();
+    const trainCX = trainRect.left + trainRect.width / 2;
+    const trainCY = trainRect.top + trainRect.height / 2;
+    const idx = extraButtons.length;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // 统一配色
+    const palettePair = COLOR_PALETTE[idx % COLOR_PALETTE.length];
+    extra.style.background = `linear-gradient(135deg, ${palettePair[0]}, ${palettePair[1]})`;
+
+    // z-index: 前20次低于训练按钮
+    extra.style.zIndex = dodgeCount < 21 ? '15' : '30';
+
+    let posX, posY;
+
+    if (dodgeCount < 21) {
+      // 安全排列：黄金角度 + 足够半径
+      const GOLDEN = 137.508 * Math.PI / 180;
+      const layer = Math.floor(idx / 8);
+      const idxInLayer = idx % 8;
+      const angle = idxInLayer * GOLDEN + layer * 0.35;
+      const radius = 170 + layer * 45 + idx * 6;
+
+      posX = trainCX + Math.cos(angle) * radius;
+      posY = trainCY + Math.sin(angle) * radius;
+
+      // 只加脉动动画
+      extra.style.setProperty('--anim-duration', (2 + (idx % 3)) + 's');
+      // 先用 popIn 入场，之后切 pulse
+      extra.style.animation = 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+      const el = extra;
+      setTimeout(() => {
+        if (el.isConnected) {
+          el.style.animation = '';
+          el.classList.add('pulse-anim');
+        }
+      }, 420);
+    } else {
+      // 疯狂模式：靠近训练按钮，随机排列
+      const chaoticAngle = idx * 0.9 + Math.random() * 1.2;
+      const chaoticRadius = 40 + Math.random() * 200;
+      posX = trainCX + Math.cos(chaoticAngle) * chaoticRadius;
+      posY = trainCY + Math.sin(chaoticAngle) * chaoticRadius;
+
+      const anims = ['rotate-anim', 'drift-anim', 'swing-anim', 'bounce-anim', 'float-anim', 'pulse-anim'];
+      extra.classList.add(anims[idx % anims.length]);
+      extra.style.setProperty('--anim-duration', (1.5 + Math.random() * 2) + 's');
+      extra.style.animation = 'popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+      const el2 = extra;
+      setTimeout(() => {
+        if (el2.isConnected) el2.style.animation = '';
+      }, 370);
+    }
+
+    posX = Math.max(10, Math.min(vw - 120, posX));
+    posY = Math.max(10, Math.min(vh - 50, posY));
+
+    extra.style.left = posX + 'px';
+    extra.style.top = posY + 'px';
+
+    document.body.appendChild(extra);
+    extraButtons.push(extra);
+  }
+
+  function unleashChaos() {
+    // 随机切换已有按钮的动画
+    extraButtons.forEach((btn) => {
+      if (Math.random() < 0.45) {
+        btn.className = 'btn btn-notrain extra-notrain';
+        const anims = ['rotate-anim', 'drift-anim', 'swing-anim', 'bounce-anim', 'float-anim', 'wobble-anim', 'shake-anim'];
+        btn.classList.add(anims[Math.floor(Math.random() * anims.length)]);
+        btn.style.setProperty('--anim-duration', (0.6 + Math.random() * 2.5) + 's');
+      }
+    });
+
+    // 随机移动按钮去覆盖训练按钮
+    extraButtons.forEach((btn) => {
+      if (Math.random() < 0.5) {
+        const trainRect = btnTrain.getBoundingClientRect();
+        btn.style.left = Math.max(0, trainRect.left + (Math.random() - 0.3) * trainRect.width) + 'px';
+        btn.style.top = Math.max(0, trainRect.top + (Math.random() - 0.3) * trainRect.height) + 'px';
+        btn.style.zIndex = '35';
+      }
+    });
+  }
+
+  function showRandomHint() {
+    const hints = [
+      '就差一点点了！💪',
+      '别跑！让我训练！🏃',
+      '老师说了今天不训练~ 😌',
+      '休息也很重要哦！',
+      '放弃吧！今天放假！🎊',
+      '训练按钮：溜了溜了～',
+      '你追不上我的！😝',
+    ];
+
+    if (dodgeCount >= 8) {
+      hints.push('哈哈哈，点到算我输！🤣', '不训练不训练不训练！📢', '全军出击！🛡️', '被包围了吧！😈');
+    }
+    if (dodgeCount >= 12) {
+      hints.push('我觉得你今天还是休息吧～😴', '听老师的话，别训练了！🙏', '你永远点不到训练按钮，永远！👻');
+    }
+
+    const hint = hints[Math.floor(Math.random() * hints.length)];
+    const el = document.createElement('div');
+    el.className = 'hint-text';
+    el.textContent = hint;
+    el.style.left = (15 + Math.random() * 70) + '%';
+    el.style.top = (8 + Math.random() * 35) + '%';
+    document.body.appendChild(el);
+
+    setTimeout(() => el.remove(), 2200);
+  }
+
+  function endGame() {
+    extraButtons.forEach(b => b.remove());
+    extraButtons = [];
+
+    overlay.classList.add('show');
+    toastEl.classList.add('show');
+
+    // 彩带
+    const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#845ef7','#f06595','#20c997'];
+    for (let i = 0; i < 60; i++) {
+      setTimeout(() => {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.top = -(Math.random() * 100) + 'px';
+        confetti.style.width = (5 + Math.random() * 15) + 'px';
+        confetti.style.height = (5 + Math.random() * 15) + 'px';
+        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        confetti.style.setProperty('--fall-duration', (1.5 + Math.random() * 3) + 's');
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 4000);
+      }, i * 40);
+    }
+
+    // 重置
+    btnTrain.style.position = '';
+    btnTrain.style.left = '';
+    btnTrain.style.top = '';
+    btnTrain.style.transform = '';
+    btnTrain.style.padding = '';
+    btnTrain.style.fontSize = '';
+    btnTrain.style.transition = '';
+    btnNoTrain.style.transform = '';
+    btnNoTrain.style.padding = '';
+    btnNoTrain.style.fontSize = '';
+    btnNoTrain.style.transition = '';
+
+    overlay.onclick = () => {
+      overlay.classList.remove('show');
+      toastEl.classList.remove('show');
+      gameEnded = false;
+    };
+  }
+})();
+</script>
+</body>
+</html>
