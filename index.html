@@ -288,15 +288,20 @@
       const dy = btnCY - e.clientY;
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
       const escapeDist = 150 + dodgeCount * 15;
-      newX = btnCX + (dx / dist) * escapeDist - btnW / 2;
-      newY = btnCY + (dy / dist) * escapeDist - btnH / 2;
+
+      // 基础逃跑方向 + 30度随机偏移，避免总是逃向同一个角落
+      const baseAngle = Math.atan2(dy, dx);
+      const jitter = (Math.random() - 0.5) * Math.PI / 3;
+      const angle = baseAngle + jitter;
+
+      newX = btnCX + Math.cos(angle) * escapeDist - btnW / 2;
+      newY = btnCY + Math.sin(angle) * escapeDist - btnH / 2;
       newX = Math.max(margin, Math.min(vw - btnW - margin, newX));
       newY = Math.max(margin, Math.min(vh - btnH - margin, newY));
 
       // 如果被卡在边界动弹不得，跳到远离鼠标的随机位置
-      const movedX = Math.abs(newX - rect.left);
-      const movedY = Math.abs(newY - rect.top);
-      if (movedX < 30 && movedY < 30) {
+      const movedDist = Math.hypot(newX - rect.left, newY - rect.top);
+      if (movedDist < 60) {
         newX = margin + Math.random() * (vw - btnW - margin * 2);
         newY = margin + Math.random() * (vh - btnH - margin * 2);
       }
